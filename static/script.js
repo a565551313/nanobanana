@@ -1,6 +1,7 @@
 // --- START OF FILE script.js ---
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     const uploadArea = document.querySelector('.upload-area');
     const fileInput = document.getElementById('image-upload');
     const thumbnailsContainer = document.getElementById('thumbnails-container');
@@ -38,13 +39,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('drag-over'));
     });
     uploadArea.addEventListener('drop', (e) => {
-        const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-        handleFiles(files);
+        const allFiles = Array.from(e.dataTransfer.files);
+        processFiles(allFiles);
     });
     fileInput.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files).filter(file => file.type.startsWith('image/'));
-        handleFiles(files);
+        const allFiles = Array.from(e.target.files);
+        processFiles(allFiles);
     });
+
+    function processFiles(allFiles) {
+        const supportedFiles = allFiles.filter(file => SUPPORTED_TYPES.includes(file.type));
+        const unsupportedFiles = allFiles.filter(file => !SUPPORTED_TYPES.includes(file.type));
+
+        if (unsupportedFiles.length > 0) {
+            const unsupportedNames = unsupportedFiles.map(f => f.name).join(', ');
+            const supportedFormats = SUPPORTED_TYPES.map(t => t.replace('image/', '')).join(', ').toUpperCase();
+            alert(`不支持的文件类型: ${unsupportedNames}\n\n仅支持以下格式: ${supportedFormats}`);
+        }
+
+        handleFiles(supportedFiles);
+    }
+
     function handleFiles(files) {
         files.forEach(file => {
             if (!selectedFiles.some(f => f.name === file.name)) {
